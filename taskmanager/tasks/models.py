@@ -19,9 +19,10 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
+
 class UserAPIKey(AbstractAPIKey):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="api_keys")
 
     class Meta(AbstractAPIKey.Meta):
-        verbose_name = 'User API Key'
-        verbose_name_plural = 'User API Keys'
+        verbose_name = "User API Key"
+        verbose_name_plural = "User API Keys"

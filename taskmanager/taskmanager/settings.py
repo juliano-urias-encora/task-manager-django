@@ -44,12 +44,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "tasks",
     "rest_framework",
-    "rest_framework_api_key"
+    "rest_framework_api_key",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
     ],
 }
 
