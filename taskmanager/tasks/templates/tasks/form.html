@@ -1,0 +1,8 @@
+<h1>{% if object %}Edit Task{% else %}New Task{% endif %}</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save</button>
+  <a href="{% url 'task-list' %}">Cancel</a>
+</form>

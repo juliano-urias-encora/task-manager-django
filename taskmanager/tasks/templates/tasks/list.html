@@ -1,0 +1,13 @@
+<h1>My Tasks</h1>
+
+<a href="{% url 'task-create' %}">Add Task</a>
+
+{% for task in tasks %}
+  <div>
+    <p>{{ task.title }} - {{ task.status }}</p>
+    <a href="{% url 'task-update' task.pk %}">Edit</a>
+    <a href="{% url 'task-delete' task.pk %}">Delete</a>
+  </div>
+{% empty %}
+  <p>No tasks yet.</p>
+{% endfor %}
