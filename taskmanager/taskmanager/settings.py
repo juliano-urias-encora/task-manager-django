@@ -43,7 +43,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "tasks",
+    "rest_framework",
+    "rest_framework_api_key"
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -128,5 +136,5 @@ STATIC_URL = "static/"
 
 # LOGIN URLS
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "task-list"
+LOGIN_REDIRECT_URL = "web-task-list"
 LOGOUT_REDIRECT_URL = "login"

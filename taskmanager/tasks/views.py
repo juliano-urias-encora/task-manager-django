@@ -18,7 +18,7 @@ def register_view(request):
             user = form.save()
             # auto login after registration, avoids redirecting to login page
             login(request, user)
-            return redirect("task-list")
+            return redirect("web-task-list")
     else:
         # GET: instantiate empty form to display on the page
         form = UserCreationForm()
@@ -39,7 +39,7 @@ def login_view(request):
             user = form.get_user()
             # creates the user session on the server and sets the cookie in the browser
             login(request, user)
-            return redirect("task-list")
+            return redirect("web-task-list")
     else:
         form = AuthenticationForm()
     return render(request, "registration/login.html", {"form": form})
@@ -66,7 +66,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     template_name = "tasks/form.html"
     fields = ["title", "description", "status"]
-    success_url = reverse_lazy("task-list")
+    success_url = reverse_lazy("web-task-list")
 
     def form_valid(self, form):
         # inject the logged-in user before saving the form
@@ -78,7 +78,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     template_name = "tasks/form.html"
     fields = ["title", "description", "status"]
-    success_url = reverse_lazy("task-list")
+    success_url = reverse_lazy("web-task-list")
 
     def get_queryset(self):
         # ensure the user can only edit their own tasks
@@ -88,7 +88,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     template_name = "tasks/confirm_delete.html"
-    success_url = reverse_lazy("task-list")
+    success_url = reverse_lazy("web-task-list")
 
     def get_queryset(self):
         # ensure the user can only delete their own tasks
