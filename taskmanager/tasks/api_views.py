@@ -1,8 +1,10 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.exceptions import PermissionDenied
+from django.db.models import Q
 
-from .models import Task, UserAPIKey
-from .serializers import TaskSerializer
+from .models import Task, TaskStatus, UserAPIKey
+from .serializers import TaskSerializer, TaskStatusSerializer
 
 
 class HasUserAPIKey(BasePermission):
@@ -41,3 +43,38 @@ class TaskViewSet(ModelViewSet):
         key = self.request.META.get("HTTP_AUTHORIZATION", "").replace("Api-Key ", "")
         api_key = UserAPIKey.objects.get_from_key(key)
         serializer.save(user=api_key.user)
+
+
+class TaskStatusViewSet(ModelViewSet):
+    serializer_class = TaskStatusSerializer
+    permission_classes = [HasUserAPIKey]
+
+    def get_user_from_request(self):
+        """Helper to get the user either via session or API Key"""
+        if self.request.user and self.request.user.is_authenticated:
+            return self.request.user
+        key = self.request.META.get('HTTP_AUTHORIZATION', '').replace('Api-Key ', '')
+        api_key = UserAPIKey.objects.get_from_key(key)
+        return api_key.user
+
+    def get_queryset(self):
+        user = self.get_user_from_request()
+        # User sees their own statuses and the default system statuses
+        return TaskStatus.objects.filter(Q(is_default=True) | Q(user=user))
+
+    def perform_create(self, serializer):
+        user = self.get_user_from_request()
+        # Force is_default=False for any status created via API
+        serializer.save(user=user, is_default=False)
+
+    def perform_update(self, serializer):
+        # Prevents editing of a default status
+        if serializer.instance.is_default:
+            raise PermissionDenied("You cannot edit a default system status.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        # Prevents deletion of a default status
+        if instance.is_default:
+            raise PermissionDenied("You cannot delete a default system status.")
+        instance.delete()
