@@ -1,14 +1,12 @@
-from rest_framework import serializers
 from django.db import models
+from rest_framework import serializers
 
 from .models import Task, TaskStatus
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    status = serializers.PrimaryKeyRelatedField(
-        queryset=TaskStatus.objects.all()
-    )
-    status_name = serializers.CharField(source='status.name', read_only=True)
+    status = serializers.PrimaryKeyRelatedField(queryset=TaskStatus.objects.all())
+    status_name = serializers.CharField(source="status.name", read_only=True)
 
     class Meta:
         model = Task
@@ -17,8 +15,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        request = self.context.get('request')
-        
+        request = self.context.get("request")
+
         # Filters the status options in the API to show only
         # those belonging to the user making the request + the default ones.
         if request:
@@ -27,16 +25,17 @@ class TaskSerializer(serializers.ModelSerializer):
                 user = request.user
             else:
                 from .models import UserAPIKey
-                key = request.META.get('HTTP_AUTHORIZATION', '').replace('Api-Key ', '')
+
+                key = request.META.get("HTTP_AUTHORIZATION", "").replace("Api-Key ", "")
                 if key:
                     try:
                         api_key = UserAPIKey.objects.get_from_key(key)
                         user = api_key.user
                     except Exception:
                         pass
-            
+
             if user:
-                fields['status'].queryset = TaskStatus.objects.filter(
+                fields["status"].queryset = TaskStatus.objects.filter(
                     models.Q(is_default=True) | models.Q(user=user)
                 )
         return fields
@@ -45,5 +44,5 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskStatus
-        fields = ['id', 'name', 'is_default']
-        read_only_fields = ['id', 'is_default']
+        fields = ["id", "name", "is_default"]
+        read_only_fields = ["id", "is_default"]

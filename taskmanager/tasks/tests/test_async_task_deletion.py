@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from rest_framework import status
 
 from ..models import Task
@@ -9,8 +10,10 @@ from ..models import Task
 class TestAsyncTaskDeletion:
     """Tests for the async task deletion flow (soft delete + Celery)."""
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_soft_delete_marks_task_as_deleted(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_soft_delete_marks_task_as_deleted(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that soft delete marks task with deleted_at timestamp."""
         task = Task.objects.create(
             title="Task for Soft Delete",
@@ -23,13 +26,15 @@ class TestAsyncTaskDeletion:
         response = api_client.delete(f"/api/v1/tasks/{task.id}/")
 
         assert response.status_code == status.HTTP_202_ACCEPTED
-        
+
         # Verify task is marked as deleted
         task.refresh_from_db()
         assert task.deleted_at is not None
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_soft_deleted_tasks_not_listed(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_soft_deleted_tasks_not_listed(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that soft-deleted tasks don't appear in task listings."""
         # Create multiple tasks
         task1 = Task.objects.create(
@@ -38,7 +43,7 @@ class TestAsyncTaskDeletion:
             status=default_statuses["pending"],
             user=api_key_user1.user,
         )
-        
+
         task2 = Task.objects.create(
             title="Task to Delete",
             description="This will be deleted",
@@ -58,8 +63,10 @@ class TestAsyncTaskDeletion:
         assert response.data[0]["title"] == "Active Task"
         assert response.data[0]["id"] == task1.id
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_cannot_access_soft_deleted_task(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_cannot_access_soft_deleted_task(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that soft-deleted tasks cannot be accessed directly."""
         task = Task.objects.create(
             title="Task to Delete",
@@ -70,7 +77,7 @@ class TestAsyncTaskDeletion:
         task_id = task.id
 
         api_client.credentials(HTTP_AUTHORIZATION=f"Api-Key {api_key_user1._key}")
-        
+
         # Delete the task
         api_client.delete(f"/api/v1/tasks/{task_id}/")
 
@@ -80,8 +87,10 @@ class TestAsyncTaskDeletion:
         # Should not be found since it's soft-deleted
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_celery_task_dispatched_on_delete(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_celery_task_dispatched_on_delete(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that Celery task is dispatched when task is deleted."""
         task = Task.objects.create(
             title="Task for Async Delete",
@@ -95,12 +104,14 @@ class TestAsyncTaskDeletion:
         response = api_client.delete(f"/api/v1/tasks/{task_id}/")
 
         assert response.status_code == status.HTTP_202_ACCEPTED
-        
+
         # Verify Celery task was called with correct task_id
         mock_celery_task.assert_called_once_with(task_id)
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_delete_returns_202_accepted(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_delete_returns_202_accepted(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that delete returns 202 Accepted status code."""
         task = Task.objects.create(
             title="Task",
@@ -119,7 +130,7 @@ class TestAsyncTaskDeletion:
     def test_permanent_deletion_via_celery_task(self, api_key_user1, default_statuses):
         """Tests that the Celery task permanently deletes tasks."""
         from tasks.tasks_celery import delete_task_permanently
-        
+
         task = Task.objects.create(
             title="Task to Permanently Delete",
             description="Will be deleted by Celery",
@@ -140,15 +151,17 @@ class TestAsyncTaskDeletion:
     def test_permanent_deletion_handles_missing_task(self):
         """Tests that Celery task gracefully handles already-deleted tasks."""
         from tasks.tasks_celery import delete_task_permanently
-        
+
         # Try to delete non-existent task - should not raise exception
         try:
             delete_task_permanently(999999)
         except Task.DoesNotExist:
             pytest.fail("Celery task should handle missing tasks gracefully")
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_update_soft_deleted_task_fails(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_update_soft_deleted_task_fails(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests that updating a soft-deleted task returns 404."""
         task = Task.objects.create(
             title="Task",
@@ -159,15 +172,13 @@ class TestAsyncTaskDeletion:
         task_id = task.id
 
         api_client.credentials(HTTP_AUTHORIZATION=f"Api-Key {api_key_user1._key}")
-        
+
         # Delete the task
         api_client.delete(f"/api/v1/tasks/{task_id}/")
 
         # Try to update it
         response = api_client.patch(
-            f"/api/v1/tasks/{task_id}/",
-            {"title": "Updated Title"},
-            format="json"
+            f"/api/v1/tasks/{task_id}/", {"title": "Updated Title"}, format="json"
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

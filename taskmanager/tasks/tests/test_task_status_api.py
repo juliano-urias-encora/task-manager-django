@@ -21,9 +21,13 @@ class TestTaskStatusAPI:
         assert "Done" in status_names
         # All returned should be default or belong to user
         for status_item in response.data:
-            assert status_item["is_default"] == True or status_item.get("_user_created", False)
+            assert status_item["is_default"] == True or status_item.get(
+                "_user_created", False
+            )
 
-    def test_create_custom_status_with_api_key(self, api_client, api_key_user1, default_statuses):
+    def test_create_custom_status_with_api_key(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests creating a custom status for a user."""
         data = {"name": "On Hold"}
 
@@ -39,7 +43,9 @@ class TestTaskStatusAPI:
         assert custom_status.user == api_key_user1.user
         assert custom_status.is_default == False
 
-    def test_user_sees_only_their_custom_statuses(self, api_client, api_key_user1, api_key_user2, default_statuses):
+    def test_user_sees_only_their_custom_statuses(
+        self, api_client, api_key_user1, api_key_user2, default_statuses
+    ):
         """Tests that user 1 only sees their own custom statuses and defaults."""
         # Create custom status for user 1
         custom_status_user1 = TaskStatus.objects.create(
@@ -61,13 +67,17 @@ class TestTaskStatusAPI:
         assert "Blocked" not in status_names
         assert "Pending" in status_names
 
-    def test_cannot_update_default_status(self, api_client, api_key_user1, default_statuses):
+    def test_cannot_update_default_status(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests that default statuses cannot be updated."""
         pending_status = default_statuses["pending"]
         data = {"name": "Changed"}
 
         api_client.credentials(HTTP_AUTHORIZATION=f"Api-Key {api_key_user1._key}")
-        response = api_client.patch(f"/api/v1/statuses/{pending_status.id}/", data, format="json")
+        response = api_client.patch(
+            f"/api/v1/statuses/{pending_status.id}/", data, format="json"
+        )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -80,7 +90,9 @@ class TestTaskStatusAPI:
         data = {"name": "New Name"}
 
         api_client.credentials(HTTP_AUTHORIZATION=f"Api-Key {api_key_user1._key}")
-        response = api_client.patch(f"/api/v1/statuses/{custom_status.id}/", data, format="json")
+        response = api_client.patch(
+            f"/api/v1/statuses/{custom_status.id}/", data, format="json"
+        )
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "New Name"
@@ -88,7 +100,9 @@ class TestTaskStatusAPI:
         custom_status.refresh_from_db()
         assert custom_status.name == "New Name"
 
-    def test_cannot_delete_default_status(self, api_client, api_key_user1, default_statuses):
+    def test_cannot_delete_default_status(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests that default statuses cannot be deleted."""
         pending_status = default_statuses["pending"]
 
@@ -115,16 +129,22 @@ class TestTaskStatusAPI:
         # Verify it was deleted
         assert not TaskStatus.objects.filter(id=status_id).exists()
 
-    def test_default_statuses_are_read_only(self, api_client, api_key_user1, default_statuses):
+    def test_default_statuses_are_read_only(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests that default statuses cannot be modified or deleted."""
         pending_status = default_statuses["pending"]
-        
+
         api_client.credentials(HTTP_AUTHORIZATION=f"Api-Key {api_key_user1._key}")
-        
+
         # Try to update
-        response = api_client.patch(f"/api/v1/statuses/{pending_status.id}/", {"name": "Modified"}, format="json")
+        response = api_client.patch(
+            f"/api/v1/statuses/{pending_status.id}/",
+            {"name": "Modified"},
+            format="json",
+        )
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        
+
         # Try to delete
         response = api_client.delete(f"/api/v1/statuses/{pending_status.id}/")
         assert response.status_code == status.HTTP_403_FORBIDDEN

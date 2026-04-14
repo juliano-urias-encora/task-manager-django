@@ -1,14 +1,14 @@
-from rest_framework.permissions import BasePermission
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from .tasks_celery import delete_task_permanently
 from .models import Task, TaskStatus, UserAPIKey
 from .serializers import TaskSerializer, TaskStatusSerializer
+from .tasks_celery import delete_task_permanently
 
 
 class HasUserAPIKey(BasePermission):
@@ -47,22 +47,22 @@ class TaskViewSet(ModelViewSet):
         key = self.request.META.get("HTTP_AUTHORIZATION", "").replace("Api-Key ", "")
         api_key = UserAPIKey.objects.get_from_key(key)
         serializer.save(user=api_key.user)
-    
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        
+
         # 1. Perform Soft Delete: mark the timestamp and save
         instance.deleted_at = timezone.now()
         instance.save()
-        
+
         # 2. Dispatch the background task to Celery via RabbitMQ
         # The .delay() method sends the message to the broker asynchronously
         delete_task_permanently.delay(instance.id)
-        
+
         # 3. Return immediate response to the client (202 Accepted)
         return Response(
             {"detail": "Task marked for deletion. It will be removed shortly."},
-            status=status.HTTP_202_ACCEPTED
+            status=status.HTTP_202_ACCEPTED,
         )
 
 
@@ -74,7 +74,7 @@ class TaskStatusViewSet(ModelViewSet):
         """Helper to get the user either via session or API Key"""
         if self.request.user and self.request.user.is_authenticated:
             return self.request.user
-        key = self.request.META.get('HTTP_AUTHORIZATION', '').replace('Api-Key ', '')
+        key = self.request.META.get("HTTP_AUTHORIZATION", "").replace("Api-Key ", "")
         api_key = UserAPIKey.objects.get_from_key(key)
         return api_key.user
 

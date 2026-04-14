@@ -15,7 +15,11 @@ class TestTaskAPIWithoutAuthentication:
 
     def test_create_task_without_authentication(self, api_client, default_statuses):
         """Tests that creation without authentication returns 403."""
-        data = {"title": "New Task", "description": "Description", "status": default_statuses["pending"].id}
+        data = {
+            "title": "New Task",
+            "description": "Description",
+            "status": default_statuses["pending"].id,
+        }
         response = api_client.post("/api/v1/tasks/", data, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -24,7 +28,9 @@ class TestTaskAPIWithoutAuthentication:
         response = api_client.get(f"/api/v1/tasks/{task_user1.id}/")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_update_task_without_authentication(self, api_client, task_user1, default_statuses):
+    def test_update_task_without_authentication(
+        self, api_client, task_user1, default_statuses
+    ):
         """Tests that update without authentication returns 403."""
         data = {"title": "Updated", "status": default_statuses["done"].id}
         response = api_client.put(

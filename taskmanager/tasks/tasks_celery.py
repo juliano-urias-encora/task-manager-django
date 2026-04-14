@@ -1,9 +1,11 @@
-from celery import shared_task
-from .models import Task
-import time
 import logging
+import time
 
-logger = logging.getLogger('taskmanager')
+from celery import shared_task
+
+from .models import Task
+
+logger = logging.getLogger("taskmanager")
 
 
 @shared_task
@@ -14,10 +16,10 @@ def delete_task_permanently(task_id):
     """
     try:
         task = Task.objects.get(id=task_id)
-        
+
         # Simulate a heavy operation (e.g., cascading deletes, cleaning up files)
-        time.sleep(5) 
-        
+        time.sleep(5)
+
         task.delete()
         logger.info(f"Task {task_id} successfully deleted from the database.")
     except Task.DoesNotExist:

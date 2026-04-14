@@ -21,7 +21,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Create a 'logs' directory at the root of the project if it doesn't exist
-LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
 
@@ -154,59 +154,56 @@ LOGIN_REDIRECT_URL = "web-task-list"
 LOGOUT_REDIRECT_URL = "login"
 
 # --- CELERY / RABBITMQ ---
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'amqp://localhost')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "amqp://localhost")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 
 # Logger
 LOGGING = {
-    'version': 1,
+    "version": 1,
     # Keep default Django loggers alive
-    'disable_existing_loggers': False,
-    
+    "disable_existing_loggers": False,
     # 1. FORMATTERS: How the text will look
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '[{asctime}] {levelname} | {name}: {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "simple": {
+            "format": "[{asctime}] {levelname} | {name}: {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     # 2. HANDLERS: Where the logs will go
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'file_error': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOGS_DIR, 'django_errors.log'),
-            'maxBytes': 1024 * 1024 * 5,  # 5 MB per file
-            'backupCount': 5,             # Keep 5 backup files
-            'formatter': 'verbose',
+        "file_error": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_DIR, "django_errors.log"),
+            "maxBytes": 1024 * 1024 * 5,  # 5 MB per file
+            "backupCount": 5,  # Keep 5 backup files
+            "formatter": "verbose",
         },
     },
-    
     # 3. LOGGERS: The channels you will call in your Python code
-    'loggers': {
+    "loggers": {
         # Catch-all for our own project code
-        'taskmanager': {
-            'handlers': ['console', 'file_error'],
-            'level': 'INFO',
-            'propagate': True,
+        "taskmanager": {
+            "handlers": ["console", "file_error"],
+            "level": "INFO",
+            "propagate": True,
         },
         # Optional: You can also control Django's internal logs
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }

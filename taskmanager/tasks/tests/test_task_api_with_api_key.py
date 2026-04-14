@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from rest_framework import status
 
 from ..models import Task, TaskStatus
@@ -13,10 +14,16 @@ class TestTaskAPIWithAPIKey:
         """Tests task listing with API Key."""
         # Creates tasks for the user
         Task.objects.create(
-            title="Task 1", description="Description 1", status=default_statuses["pending"], user=api_key_user1.user
+            title="Task 1",
+            description="Description 1",
+            status=default_statuses["pending"],
+            user=api_key_user1.user,
         )
         Task.objects.create(
-            title="Task 2", description="Description 2", status=default_statuses["pending"], user=api_key_user1.user
+            title="Task 2",
+            description="Description 2",
+            status=default_statuses["pending"],
+            user=api_key_user1.user,
         )
 
         # Makes request with API Key
@@ -28,7 +35,9 @@ class TestTaskAPIWithAPIKey:
         assert response.data[0]["title"] == "Task 1"
         assert response.data[1]["title"] == "Task 2"
 
-    def test_create_task_with_api_key(self, api_client, api_key_user1, default_statuses):
+    def test_create_task_with_api_key(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests task creation with API Key."""
         data = {
             "title": "New Task",
@@ -47,7 +56,9 @@ class TestTaskAPIWithAPIKey:
         # Checks if task was created in database
         assert Task.objects.filter(title="New Task", user=api_key_user1.user).exists()
 
-    def test_retrieve_task_with_api_key(self, api_client, api_key_user1, default_statuses):
+    def test_retrieve_task_with_api_key(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests retrieving a specific task with API Key."""
         task = Task.objects.create(
             title="Specific Task",
@@ -64,7 +75,9 @@ class TestTaskAPIWithAPIKey:
         assert response.data["id"] == task.id
         assert response.data["status_name"] == "Pending"
 
-    def test_update_task_with_api_key(self, api_client, api_key_user1, default_statuses):
+    def test_update_task_with_api_key(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests updating a task with API Key."""
         task = Task.objects.create(
             title="Original Title",
@@ -91,7 +104,9 @@ class TestTaskAPIWithAPIKey:
         assert task.title == "Updated Title"
         assert task.status.name == "Done"
 
-    def test_partial_update_task_with_api_key(self, api_client, api_key_user1, default_statuses):
+    def test_partial_update_task_with_api_key(
+        self, api_client, api_key_user1, default_statuses
+    ):
         """Tests partial update of task with API Key."""
         task = Task.objects.create(
             title="Original Title",
@@ -109,8 +124,10 @@ class TestTaskAPIWithAPIKey:
         assert response.data["status_name"] == "In Progress"
         assert response.data["title"] == "Original Title"  # Not changed
 
-    @patch('tasks.api_views.delete_task_permanently.delay')
-    def test_delete_task_with_api_key(self, mock_celery_task, api_client, api_key_user1, default_statuses):
+    @patch("tasks.api_views.delete_task_permanently.delay")
+    def test_delete_task_with_api_key(
+        self, mock_celery_task, api_client, api_key_user1, default_statuses
+    ):
         """Tests soft delete of a task with API Key (returns 202 Accepted)."""
         task = Task.objects.create(
             title="Task to Delete",

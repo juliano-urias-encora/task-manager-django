@@ -1,8 +1,10 @@
-import pytest
 from unittest.mock import patch
-from django.test import TestCase
+
+import pytest
 from django.contrib.auth.models import User
+from django.test import TestCase
 from rest_framework.test import APIClient
+
 from tasks.models import Task, TaskStatus, UserAPIKey
 
 
@@ -11,6 +13,7 @@ from tasks.models import Task, TaskStatus, UserAPIKey
 def celery_config():
     """Configure Celery to run tasks synchronously during tests."""
     from celery import current_app
+
     current_app.conf.CELERY_ALWAYS_EAGER = True
     current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
     return current_app.conf
@@ -19,7 +22,7 @@ def celery_config():
 @pytest.fixture
 def mock_celery_task(monkeypatch):
     """Mock the Celery task to avoid connecting to RabbitMQ."""
-    mock_delete = patch('tasks.api_views.delete_task_permanently')
+    mock_delete = patch("tasks.api_views.delete_task_permanently")
     return mock_delete.start()
 
 
