@@ -89,7 +89,7 @@ Total: 32 tests across 5 test modules.
 ## Project Structure
 
 ```
-taskmanager/
+task-manager-django/
 ├── taskmanager/              # Django configuration
 │   ├── settings.py
 │   ├── urls.py
