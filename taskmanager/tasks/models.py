@@ -26,6 +26,8 @@ class Task(models.Model):
     status = models.ForeignKey(TaskStatus, on_delete=models.PROTECT, null=True, related_name='tasks')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
 
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.title
 
