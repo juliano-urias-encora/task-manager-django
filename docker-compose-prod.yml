@@ -1,0 +1,48 @@
+services:
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Admin panel (login: guest / guest)
+
+  celery_worker:
+    build: .
+    command: celery -A taskmanager worker --loglevel=info
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+  flower:
+    build: .
+    # Run Flower web dashboard binding to port 5555
+    command: celery -A taskmanager flower --port=5555
+    volumes:
+      - .:/app
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    # Wait for the broker and database before starting the dashboard
+    depends_on:
+      rabbitmq:
+        condition: service_started
