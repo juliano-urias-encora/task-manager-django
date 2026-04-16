@@ -1,13 +1,38 @@
-<h1>My Tasks</h1>
+{% extends 'base.html' %}
 
-<a href="{% url 'task-create' %}">Add Task</a>
+{% block title %}My Tasks{% endblock %}
 
-{% for task in tasks %}
-  <div>
-    <p>{{ task.title }} - {{ task.status }}</p>
-    <a href="{% url 'task-update' task.pk %}">Edit</a>
-    <a href="{% url 'task-delete' task.pk %}">Delete</a>
+{% block content %}
+<div class="task-container">
+  <div class="task-header">
+    <h1>My Tasks</h1>
+    <a href="{% url 'task-create' %}" class="btn btn-primary">+ Add Task</a>
+    <a href="{% url 'logout' %}" class="btn btn-logout">Logout</a>
   </div>
-{% empty %}
-  <p>No tasks yet.</p>
-{% endfor %}
+
+  {% if tasks %}
+    {% for task in tasks %}
+      <div class="task-item">
+        <div class="task-title">{{ task.title }}</div>
+        <span class="task-status status-{{ task.status|lower }}">
+          {{ task.status|upper }}
+        </span>
+        {% if task.description %}
+          <p style="color: #666; margin: 10px 0; font-size: 14px;">{{ task.description }}</p>
+        {% endif %}
+        <div class="task-actions">
+          <a href="{% url 'task-update' task.pk %}" class="btn btn-secondary">Edit</a>
+          <a href="{% url 'task-delete' task.pk %}" class="btn delete">Delete</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>No tasks yet.</p>
+      <p style="margin-top: 10px; font-size: 14px;">
+        <a href="{% url 'task-create' %}">Create your first task →</a>
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

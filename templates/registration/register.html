@@ -1,6 +1,44 @@
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Register</button>
-  <a href="{% url 'login' %}">Already have an account?</a>
-</form>
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Create Account</h1>
+  
+  <form method="post">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+      <div class="errorlist">
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </div>
+    {% endif %}
+    
+    {% for field in form %}
+      <div class="form-group">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <div class="errorlist">
+            {% for error in field.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if field.help_text %}
+          <small>{{ field.help_text|safe }}</small>
+        {% endif %}
+      </div>
+    {% endfor %}
+    
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+  
+  <div class="link-login">
+    Already have an account? <a href="{% url 'login' %}">Login here</a>
+  </div>
+</div>
+{% endblock %}
